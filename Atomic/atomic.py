@@ -29,12 +29,13 @@ from .Import import import_docker
 
 IMAGES = []
 
+
 def convert_size(size):
     if size > 0:
         size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
         i = int(math.floor(math.log(size, 1000)))
         p = math.pow(1000, i)
-        s = round(size/p, 2)
+        s = round(size / p, 2)
         if s > 0:
             return '%s %s' % (s, size_name[i])
     return '0B'
@@ -342,7 +343,9 @@ class Atomic(object):
         except docker.errors.APIError:
             pass
         except requests.exceptions.ConnectionError as e:
-            raise IOError("Cannot connect to the Docker daemon. Is the docker daemon running on this host?")
+            raise IOError(
+                "Cannot connect to the Docker daemon. "
+                "Is the docker daemon running on this host?")
 
         return None
 
@@ -443,8 +446,12 @@ class Atomic(object):
             subprocess.check_call(cmd, env=self.cmd_env, shell=True)
 
     def scan(self):
-        if (not self.args.images and not self.args.containers and not self.args.all) and len(self.args.scan_targets) == 0:
-            sys.stderr.write("\nYou must provide a list of containers or images to scan\n")
+        if (
+                not self.args.images
+                and not self.args.containers
+                and not self.args.all) and len(self.args.scan_targets) == 0:
+            sys.stderr.write(
+                "\nYou must provide a list of containers or images to scan\n")
             sys.exit(1)
         self.ping()
         BUS_NAME = "org.OpenSCAP.daemon"
@@ -478,9 +485,10 @@ class Atomic(object):
         try:
             oscap_d = bus.get_object(BUS_NAME, OBJECT_PATH)
             oscap_i = dbus.Interface(oscap_d, INTERFACE)
-            # Check if the user has asked to override the behaviour of fetching the
-            # latest CVE input data, as defined in the openscap-daemon conf file
-            # oscap-daemon a byte of 0 (False), 1 (True), and 2 (no change)
+            # Check if the user has asked to override the behaviour of fetching
+            # the latest CVE input data, as defined in the openscap-daemon conf
+            # file oscap-daemon a byte of 0 (False), 1 (True), and
+            # 2 (no change)
 
             if self.args.fetch_cves is None:
                 fetch = 2
@@ -488,11 +496,14 @@ class Atomic(object):
                 fetch = 1
             else:
                 fetch = 0
-            scan_return = json.loads(oscap_i.scan_list(scan_list, 4, fetch, timeout=99999))
+            scan_return = json.loads(oscap_i.scan_list(
+                scan_list, 4, fetch, timeout=99999))
 
         except dbus.exceptions.DBusException as e:
-            message = "The openscap-daemon returned: {0}".format(e.get_dbus_message())
-            if e.get_dbus_name() == 'org.freedesktop.DBus.Error.ServiceUnknown':
+            message = "The openscap-daemon returned: {0}".format(
+                e.get_dbus_message())
+            if e.get_dbus_name() == (
+                    'org.freedesktop.DBus.Error.ServiceUnknown'):
                 message = "Unable to find the openscap-daemon dbus service. "\
                           "Either start the openscap-daemon service or pull " \
                           "and run the openscap-daemon image"
@@ -549,7 +560,7 @@ class Atomic(object):
         if self.args.reboot:
             argv.append("--reboot")
         if self.args.os:
-            argv.append("--os=" % self.args.os )
+            argv.append("--os=" % self.args.os)
         if self.args.diff:
             argv.append("--check-diff")
         if self.args.downgrade:
@@ -565,7 +576,7 @@ class Atomic(object):
     def host_rebase(self):
         argv = ["rebase", self.args.refspec]
         if self.args.os:
-            argv.append("--os=" % self.args.os )
+            argv.append("--os=" % self.args.os)
         self._rpmostree(argv)
 
     def host_deploy(self):
@@ -675,7 +686,7 @@ class Atomic(object):
             try:
                 # Shut up pylint in case we're on a machine with upstream
                 # docker-py, which lacks the remote keyword arg.
-                #pylint: disable=unexpected-keyword-arg
+                # pylint: disable=unexpected-keyword-arg
                 inspection = self.d.inspect_image(self.args.image, remote=True)
             except docker.errors.APIError:
                 # image does not exist on any configured registry
@@ -708,16 +719,16 @@ class Atomic(object):
 
     def images(self):
         def get_col_lengths(_images):
-            '''
+            """
             Determine the max length of the repository and tag names
             :param _images:
             :return: a set with len of repository and tag
-            '''
+            """
             repo_tags = [item.split(":") for sublist in _images for item
                          in sublist['RepoTags']]
             # We add the 1 to the repo max length for self.dangling(repo)
-            return max([len(x[0]) for x in repo_tags]) + 1,\
-                   max([len(x[1]) for x in repo_tags])
+            return (max([len(x[0]) for x in repo_tags]) + 1,
+                    max([len(x[1]) for x in repo_tags]))
 
         if self.args.prune:
             cmd = "/usr/bin/docker images --filter dangling=true -q".split()
@@ -733,11 +744,13 @@ class Atomic(object):
                                      "CREATED", "VIRTUAL SIZE"))
         for image in self.get_images():
             repo, tag = image["RepoTags"][0].rsplit(":", 1)
-            self.writeOut(col_out.format(self.dangling(repo) + repo,
-                                         tag, image["Id"][:12],
-                 time.strftime("%F %H:%M",
-                               time.localtime(image["Created"])),
-                 convert_size(image["VirtualSize"])))
+            self.writeOut(col_out.format(
+                self.dangling(repo) + repo,
+                tag, image["Id"][:12],
+                time.strftime(
+                    "%F %H:%M",
+                    time.localtime(image["Created"])),
+                convert_size(image["VirtualSize"])))
 
     def install(self):
         self.inspect = self._inspect_image()
@@ -927,10 +940,10 @@ class Atomic(object):
             "/bin/echo \"" + cmd + "\"", env=self.cmd_env, shell=True)
 
     def ping(self):
-        '''
+        """
         Check if the docker daemon is running; if not, exit with
         message and return code 1
-        '''
+        """
         try:
             self.d.ping()
         except requests.exceptions.ConnectionError:
@@ -938,12 +951,12 @@ class Atomic(object):
             sys.exit(1)
 
     def _is_container(self, identifier, active=False):
-        '''
+        """
         Checks is the identifier is a container ID or container name.  If
         it is, returns the full container ID. Else it will return an
         AtomicError.  Takes optional keyword active, which signifies
         that you want to only deal with active containers.
-        '''
+        """
         if active:
             active_cons = self.get_active_containers()
             active_con_ids = [x['Id'] for x in active_cons]
@@ -988,11 +1001,11 @@ class Atomic(object):
             return con_ids[0]
 
     def _is_image(self, identifier):
-        '''
+        """
         Checks is the identifier is a image ID or a matches an image name.
         If it finds a match, it returns the full image ID. Else it will
         return an AtomicError.
-        '''
+        """
         err_append = "Refine your search to narrow results."
         image_info = self.get_images()
 
@@ -1020,10 +1033,10 @@ class Atomic(object):
         raise AtomicError
 
     def get_input_id(self, identifier):
-        '''
+        """
         Determine if the input "identifier" is valid.  Return the container or
         image ID when true and raise a ValueError when not
-        '''
+        """
         try:
             return self._is_image(identifier)
         except AtomicError:
@@ -1036,29 +1049,29 @@ class Atomic(object):
                          .format(identifier))
 
     def get_images(self):
-        '''
+        """
         Wrapper function that should be used instead of querying docker
         multiple times for a list of images.
-        '''
+        """
         if not self.images_cache:
             self.images_cache = self.d.images()
         return self.images_cache
 
     def get_containers(self):
-        '''
+        """
         Wrapper function that should be used instead of querying docker
         multiple times for a list of containers
-        '''
+        """
         if not self.containers:
             self.containers = self.d.containers(all=True)
 
         return self.containers
 
     def get_active_containers(self):
-        '''
+        """
         Wrapper function for obtaining active containers.  Should be used
         instead of direct queries to docker
-        '''
+        """
         if not self.active_containers:
             self.active_containers = self.d.containers(all=False)
 

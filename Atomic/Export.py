@@ -9,10 +9,10 @@ import docker
 
 from . import util
 
-
 DOCKER_CLIENT = docker.Client()
 
 ATOMIC_LIBEXEC = os.environ.get('ATOMIC_LIBEXEC', '/usr/libexec/atomic')
+
 
 def export_docker(graph, export_location):
     """
@@ -24,23 +24,24 @@ def export_docker(graph, export_location):
         os.makedirs(export_location)
 
     try:
-    #Save the docker storage driver
+        # Save the docker storage driver
         storage_driver = DOCKER_CLIENT.info()["Driver"]
-        filed = open(export_location+"/info.txt", "w")
+        filed = open(export_location + "/info.txt", "w")
         filed.write(storage_driver)
         filed.close()
 
-        #export docker images
+        # export docker images
         export_images(export_location)
-        #export docker containers
+        # export docker containers
         export_containers(graph, export_location)
-        #export docker volumes
+        # export docker volumes
         export_volumes(graph, export_location)
     except:
         error = sys.exc_info()[0]
         sys.exit(error)
 
     util.writeOut("atomic export completed successfully")
+
 
 def export_images(export_location):
     """
@@ -65,6 +66,7 @@ def export_images(export_location):
         with open(export_location + '/images/' + id, 'w') as f:
             subprocess.check_call(["/usr/bin/docker", "save", tags], stdout=f)
 
+
 def export_containers(graph, export_location):
     """
     Method for exporting docker containers into a filesystem directory.
@@ -82,9 +84,11 @@ def export_containers(graph, export_location):
                                '--graph=' + graph,
                                '--export-location=' + export_location])
 
+
 def tar_create(srcdir, destfile):
-    subprocess.check_call(['/usr/bin/tar', '--create', '--gzip', '--selinux',
-                           '--file', destfile, '--directory', srcdir, '.'])
+    subprocess.check_call([
+        '/usr/bin/tar', '--create', '--gzip', '--selinux',
+        '--file', destfile, '--directory', srcdir, '.'])
 
 
 def export_volumes(graph, export_location):
@@ -95,9 +99,9 @@ def export_volumes(graph, export_location):
         os.makedirs(export_location + "/volumes")
 
     util.writeOut("Exporting volumes")
-    tar_create(srcdir = graph + '/volumes',
-               destfile = export_location + '/volumes/volumeData.tar.gz')
+    tar_create(srcdir=graph + '/volumes',
+               destfile=export_location + '/volumes/volumeData.tar.gz')
 
     if os.path.isdir(graph + "/vfs"):
-        tar_create(srcdir = graph + '/vfs',
-                   destfile = export_location + '/volumes/vfsData.tar.gz')
+        tar_create(srcdir=graph + '/vfs',
+                   destfile=export_location + '/volumes/vfsData.tar.gz')

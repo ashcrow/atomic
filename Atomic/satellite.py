@@ -222,7 +222,8 @@ class SatelliteServer(object):
             content = image_stream.read(self._chunk_size)
             if not content:
                 break
-            url = "{0}/katello/api/repositories/{1}/content_uploads/{2}".format(self._server_url, repo_id, upload_id)
+            url = "{0}/katello/api/repositories/{1}/content_uploads/{2}"
+            url = url.format(self._server_url, repo_id, upload_id)
             sys.stdout.flush()
             sys.stdout.write(".")
             payload = {
@@ -241,7 +242,8 @@ class SatelliteServer(object):
 
     def _delete_upload_id(self, upload_id, repo_id):
         """Delete upload request ID"""
-        delete_url = "{0}/katello/api/repositories/{1}/content_uploads/{2}".format(self._server_url, repo_id, upload_id)
+        url = "{0}/katello/api/repositories/{1}/content_uploads/{2}"
+        delete_url = url.format(self._server_url, repo_id, upload_id)
         self._call_satellite(delete_url, "delete")
         if self._debug:
             print("Successful Deletion")
@@ -315,4 +317,8 @@ class SatelliteConfig(object):
                 val, self.config_file, e))
 
     def config(self):
-        return {"url": self.url, "verify_ssl": self.verify_ssl, "username": self.username, "password": self.password}
+        return {
+            "url": self.url,
+            "verify_ssl": self.verify_ssl,
+            "username": self.username,
+            "password": self.password}

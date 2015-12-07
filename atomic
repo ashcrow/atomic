@@ -72,7 +72,8 @@ class AliasedSubParsersAction(argparse._SubParsersAction):
         else:
             aliases = []
 
-        parser = super(AliasedSubParsersAction, self).add_parser(name, **kwargs)
+        parser = super(AliasedSubParsersAction, self).add_parser(
+            name, **kwargs)
 
         # Make the aliases work.
         for alias in aliases:
@@ -86,71 +87,85 @@ class AliasedSubParsersAction(argparse._SubParsersAction):
 
         return parser
 
+
 def add_opt(sub):
-    sub.add_argument("--opt1", dest="opt1",help=argparse.SUPPRESS)
-    sub.add_argument("--opt2", dest="opt2",help=argparse.SUPPRESS)
-    sub.add_argument("--opt3", dest="opt3",help=argparse.SUPPRESS)
+    sub.add_argument("--opt1", dest="opt1", help=argparse.SUPPRESS)
+    sub.add_argument("--opt2", dest="opt2", help=argparse.SUPPRESS)
+    sub.add_argument("--opt3", dest="opt3", help=argparse.SUPPRESS)
+
 
 if __name__ == '__main__':
     if os.geteuid() != 0:
-        exit("%s needs to be run as root." % sys.argv[0] )
-   
+        exit("%s needs to be run as root." % sys.argv[0])
+
     atomic = Atomic.Atomic()
     parser = HelpByDefaultArgumentParser(description=atomic.help())
     parser.register('action', 'parsers', AliasedSubParsersAction)
-    parser.add_argument('-v', '--version', action='version', version=Atomic.__version__)
+    parser.add_argument(
+        '-v', '--version', action='version', version=Atomic.__version__)
     subparser = parser.add_subparsers(help=_("commands"))
 
     # atomic diff
     diffp = subparser.add_parser(
-    "diff", help=_("Show differences between two container images, file diff or RPMS."),
-    epilog="atomic diff 'image1|container1' 'image2|container2'")
+        "diff", help=_(
+            "Show differences between two container images, "
+            "file diff or RPMS."),
+        epilog="atomic diff 'image1|container1' 'image2|container2'")
     diffp.set_defaults(_class=Diff, func='diff')
-    diffp.add_argument("compares", nargs=2,
-                       help=_("Container images to compare"))
-    diffp.add_argument("--json", default=False, action='store_true',
-                       help=_("output json"))
-    diffp.add_argument("-n", "--no-files", default=False, action='store_true',
-                       help=_("Do not perform a file diff between the docker objects"))
-    diffp.add_argument("--names-only", default=False,
-                       action='store_true', help=_("Only show RPM names and not versions"))
-    diffp.add_argument("-r", "--rpms", default=False, action='store_true',
-                       help=_("List different rpms between the container images."))
-    diffp.add_argument("-v", "--verbose", default=False, action='store_true',
-                       help=_("Show verbose output, listing all RPMs"))
+    diffp.add_argument(
+        "compares", nargs=2,
+        help=_("Container images to compare"))
+    diffp.add_argument(
+        "--json", default=False, action='store_true',
+        help=_("output json"))
+    diffp.add_argument(
+        "-n", "--no-files", default=False, action='store_true',
+        help=_("Do not perform a file diff between the docker objects"))
+    diffp.add_argument(
+        "--names-only", default=False,
+        action='store_true', help=_("Only show RPM names and not versions"))
+    diffp.add_argument(
+        "-r", "--rpms", default=False, action='store_true',
+        help=_("List different rpms between the container images."))
+    diffp.add_argument(
+        "-v", "--verbose", default=False, action='store_true',
+        help=_("Show verbose output, listing all RPMs"))
 
     if os.path.exists("/usr/bin/rpm-ostree"):
         # atomic host
-        hostp = subparser.add_parser("host", help=_("execute Atomic host "
-                                                    "commands"))
+        hostp = subparser.add_parser(
+            "host", help=_("execute Atomic host commands"))
         host_subparser = hostp.add_subparsers(help=_("host commands"))
 
         # atomic host rollback
         rollbackp = host_subparser.add_parser(
-            "rollback", help=_("switch to alternate installed tree at next boot"))
+            "rollback",
+            help=_("switch to alternate installed tree at next boot"))
         rollbackp.set_defaults(func='host_rollback')
-        rollbackp.add_argument("-r", "--reboot", dest="reboot",
-                               action="store_true",
-                               help=_("initiate a reboot after rollback is "
-                                      "prepared"))
-        rollbackp.add_argument("args", nargs=argparse.REMAINDER,
-                               help=_("Additional arguments appended to the "
-                                      "rollback method.  Use `-- --OPTION=VAL` "
-                                      "if you want to pass additional "
-                                      "unsupported arguments to rpm-ostree."))
-
+        rollbackp.add_argument(
+            "-r", "--reboot", dest="reboot",
+            action="store_true",
+            help=_("initiate a reboot after rollback is prepared"))
+        rollbackp.add_argument(
+            "args", nargs=argparse.REMAINDER,
+            help=_("Additional arguments appended to the "
+                   "rollback method.  Use `-- --OPTION=VAL` "
+                   "if you want to pass additional "
+                   "unsupported arguments to rpm-ostree."))
 
         # atomic host status
         statusp = host_subparser.add_parser(
             "status", help=_("list information about all deployments"))
-        statusp.add_argument("-p", "--pretty", dest="pretty",
-                              action="store_true",
-                              help=_("Display status in formatted rows"))
-        statusp.add_argument("args", nargs=argparse.REMAINDER,
-                             help=_("Additional arguments appended to the "
-                                    "status method.  Use `-- --OPTION=VAL` "
-                                    "if you want to pass additional "
-                                    "unsupported arguments to rpm-ostree."))
+        statusp.add_argument(
+            "-p", "--pretty", dest="pretty",
+            action="store_true",
+            help=_("Display status in formatted rows"))
+        statusp.add_argument(
+            "args", nargs=argparse.REMAINDER,
+            help=_("Additional arguments appended to the "
+                   "status method.  Use `-- --OPTION=VAL` "
+                   "if you want to pass additional "
+                   "unsupported arguments to rpm-ostree."))
 
         statusp.set_defaults(func='host_status')
 
@@ -159,56 +174,69 @@ if __name__ == '__main__':
             "upgrade", help=_("upgrade to the latest Atomic tree if one "
                               "is available"))
         upgradep.set_defaults(func='host_upgrade')
-        upgradep.add_argument("-r", "--reboot", dest="reboot",
-                              action="store_true",
-                              help=_("if an upgrade is available, reboot "
-                                     "after deployment is complete"))
-        upgradep.add_argument("--allow-downgrade", dest="downgrade",
-                              action="store_true",
-                              help=_("Permit deployment of chronologically older trees"))
-        upgradep.add_argument("--os", dest="os",
-                              help=_("Operate on provided OSNAME"))
-        upgradep.add_argument("--check-diff", dest="diff",
-                              action="store_true",
-                              help=_("Check for upgrades and print package diff only"))
-        upgradep.add_argument("args", nargs=argparse.REMAINDER,
-                              help=_("Additional arguments appended to the "
-                                     "upgrade method.  Use `-- --OPTION=VAL` "
-                                     "if you want to pass additional "
-                                     "unsupported arguments to rpm-ostree."))
+        upgradep.add_argument(
+            "-r", "--reboot", dest="reboot",
+            action="store_true",
+            help=_("if an upgrade is available, reboot "
+                   "after deployment is complete"))
+        upgradep.add_argument(
+            "--allow-downgrade", dest="downgrade",
+            action="store_true",
+            help=_("Permit deployment of chronologically older trees"))
+        upgradep.add_argument(
+            "--os", dest="os",
+            help=_("Operate on provided OSNAME"))
+        upgradep.add_argument(
+            "--check-diff", dest="diff",
+            action="store_true",
+            help=_("Check for upgrades and print package diff only"))
+        upgradep.add_argument(
+            "args", nargs=argparse.REMAINDER,
+            help=_("Additional arguments appended to the "
+                   "upgrade method.  Use `-- --OPTION=VAL` "
+                   "if you want to pass additional "
+                   "unsupported arguments to rpm-ostree."))
 
         # atomic host rebase
         rebasep = host_subparser.add_parser(
             "rebase", help=_("Download and deploy a new origin refspec"))
         rebasep.set_defaults(func='host_rebase')
-        rebasep.add_argument("--os", dest="os",
-                              help=_("Operate on provided OSNAME"))
-        rebasep.add_argument("refspec",
-                             help=_("Origin refspec for new deployment"))
-        rebasep.add_argument("args", nargs=argparse.REMAINDER,
-                             help=_("Additional arguments appended to the "
-                                    "rebase method.  Use `-- --OPTION=VAL` "
-                                    "if you want to pass additional "
-                                    "unsupported arguments to rpm-ostree."))
+        rebasep.add_argument(
+            "--os", dest="os",
+            help=_("Operate on provided OSNAME"))
+        rebasep.add_argument(
+            "refspec",
+            help=_("Origin refspec for new deployment"))
+        rebasep.add_argument(
+            "args", nargs=argparse.REMAINDER,
+            help=_("Additional arguments appended to the "
+                   "rebase method.  Use `-- --OPTION=VAL` "
+                   "if you want to pass additional "
+                   "unsupported arguments to rpm-ostree."))
 
         # atomic host deploy
         deployp = host_subparser.add_parser(
             "deploy", help=_("deploy a specific commit"))
         deployp.set_defaults(func='host_deploy')
-        deployp.add_argument("revision", help=_("Checksum or version to deploy"));
-        deployp.add_argument("-r", "--reboot", dest="reboot",
-                             action="store_true",
-                             help=_("Reboot after deployment is complete"))
-        deployp.add_argument("--os", dest="os",
-                             help=_("Operate on provided OSNAME"))
-        deployp.add_argument("--preview", dest="preview",
-                             action="store_true",
-                             help=_("Just preview package differences"))
-        deployp.add_argument("args", nargs=argparse.REMAINDER,
-                             help=_("Additional arguments appended to the "
-                                    "deploy method.  Use `-- --OPTION=VAL` "
-                                    "if you want to pass additional "
-                                    "unsupported arguments to rpm-ostree."))
+        deployp.add_argument(
+            "revision", help=_("Checksum or version to deploy"))
+        deployp.add_argument(
+            "-r", "--reboot", dest="reboot",
+            action="store_true",
+            help=_("Reboot after deployment is complete"))
+        deployp.add_argument(
+            "--os", dest="os",
+            help=_("Operate on provided OSNAME"))
+        deployp.add_argument(
+            "--preview", dest="preview",
+            action="store_true",
+            help=_("Just preview package differences"))
+        deployp.add_argument(
+            "args", nargs=argparse.REMAINDER,
+            help=_("Additional arguments appended to the "
+                   "deploy method.  Use `-- --OPTION=VAL` "
+                   "if you want to pass additional "
+                   "unsupported arguments to rpm-ostree."))
 
     # atomic info
     infop = subparser.add_parser(
@@ -255,35 +283,47 @@ if __name__ == '__main__':
                          help=_("prune dangling images"))
 
     # atomic migrate
-    migratep = subparser.add_parser("migrate", help=_("migrate container's content from one backend storage "
-                                                    "to another"))
+    migratep = subparser.add_parser(
+        "migrate",
+        help=_(
+            "migrate container's content from one backend storage to another"))
     migrate_subparser = migratep.add_subparsers(help=_("migrate commands"))
 
-   # atomic export
+    # atomic export
     exportp = migrate_subparser.add_parser(
-        "export", help=_("export containers and it's associated contents into a filesystem directory"),
+        "export",
+        help=_("export containers and it's associated "
+               "contents into a filesystem directory"),
         epilog="export container's content. "
         "The export command would export images, "
         "containers and volumes into a filesystem directory.")
     exportp.set_defaults(func='Export')
-    exportp.add_argument("--graph", dest="graph", default="/var/lib/docker",
-                        help=_("Root of the Docker runtime (Default: /var/lib/docker)"))
-    exportp.add_argument("--dir", dest="export_location",
-                         default="/var/lib/atomic/migrate",
-                         help=_("Path for exporting container's content (Default: /var/lib/atomic/migrate)"))
-	
+    exportp.add_argument(
+        "--graph", dest="graph", default="/var/lib/docker",
+        help=_("Root of the Docker runtime (Default: /var/lib/docker)"))
+    exportp.add_argument(
+        "--dir", dest="export_location",
+        default="/var/lib/atomic/migrate",
+        help=_("Path for exporting container's content "
+               "(Default: /var/lib/atomic/migrate)"))
+
     # atomic import
     importp = migrate_subparser.add_parser(
-         "import", help=_("import containers and it's associated contents from a filesystem directory"),
-         epilog="import container's content."
-         "The import command would import images,"
-         "containers and volumes from a filesystem directory.")
+        "import",
+        help=_("import containers and it's associated contents "
+               "from a filesystem directory"),
+        epilog="import container's content."
+        "The import command would import images,"
+        "containers and volumes from a filesystem directory.")
     importp.set_defaults(func='Import')
-    importp.add_argument("--graph", dest="graph", default="/var/lib/docker",
-                         help=_("Root of the Docker runtime (Default: /var/lib/docker)"))
-    importp.add_argument("--dir", dest="import_location",
-                         default="/var/lib/atomic/migrate",
-                         help=_("Path for importing container's content (Default: /var/lib/atomic/migrate)"))
+    importp.add_argument(
+        "--graph", dest="graph", default="/var/lib/docker",
+        help=_("Root of the Docker runtime (Default: /var/lib/docker)"))
+    importp.add_argument(
+        "--dir", dest="import_location",
+        default="/var/lib/atomic/migrate",
+        help=_("Path for importing container's content "
+               "(Default: /var/lib/atomic/migrate)"))
 
     # atomic mount
     mountp = subparser.add_parser(
@@ -292,62 +332,77 @@ if __name__ == '__main__':
         "specified directory so that its contents may be "
         "inspected.")
     mountp.set_defaults(func='mount')
-    mountp.add_argument("-o", "--options", dest="options", default="",
-                        help=_("comma-separated list of mount options, "
-                               "defaults are 'ro,nodev,nosuid'"))
-    mountp.add_argument("--live", dest="live", action="store_true",
-                        help=_("mount a running container 'live', allowing "
-                               "modification of the contents."))
+    mountp.add_argument(
+        "-o", "--options", dest="options", default="",
+        help=_("comma-separated list of mount options, "
+               "defaults are 'ro,nodev,nosuid'"))
+    mountp.add_argument(
+        "--live", dest="live", action="store_true",
+        help=_("mount a running container 'live', allowing "
+               "modification of the contents."))
     mountp.add_argument("image", help=_("image/container id"))
-    mountp.add_argument("mountpoint", help=_("filesystem location to mount "
-                                             "the image/container"))
+    mountp.add_argument(
+        "mountpoint",
+        help=_("filesystem location to mount the image/container"))
+
     # atomic push
     pushp = subparser.add_parser(
-        "push", aliases=['upload'], help=_("push latest image to repository"),
+        "push",
+        aliases=['upload'],
+        help=_("push latest image to repository"),
         epilog="push the latest specified image to a repository.")
     pushp.set_defaults(func='push')
 
     # making it so we cannot call both the --pulp and --satellite commands
     # at the same time (mutually exclusive)
     pushgroup = pushp.add_mutually_exclusive_group()
-    pushgroup.add_argument("--pulp",
-                           default=False,
-                           action="store_true",
-                           help=_("push image using pulp"))
-    pushgroup.add_argument("--satellite",
-                           default=False,
-                           action="store_true",
-                           help=_("push image using Satellite"))
+    pushgroup.add_argument(
+        "--pulp",
+        default=False,
+        action="store_true",
+        help=_("push image using pulp"))
+    pushgroup.add_argument(
+        "--satellite",
+        default=False,
+        action="store_true",
+        help=_("push image using Satellite"))
 
-    pushp.add_argument("--verify_ssl",
-                         default=None,
-                         action="store_true",
-                         help=_("flag to verify ssl of registry"))
-    pushp.add_argument("--debug",
-                         default=None,
-                         action="store_true",
-                         help=_("debug mode"))
-    pushp.add_argument("-U", "--url",
-                         dest="url",
-                         default=None,
-                         help=_("URL for remote registry"))
-    pushp.add_argument("-u", "--username",
-                         default=None,
-                         dest="username",
-                         help=_("Username for remote registry"))
-    pushp.add_argument("-p", "--password",
-                         default=None,
-                         dest="password",
-                         help=_("Password for remote registry"))
+    pushp.add_argument(
+        "--verify_ssl",
+        default=None,
+        action="store_true",
+        help=_("flag to verify ssl of registry"))
+    pushp.add_argument(
+        "--debug",
+        default=None,
+        action="store_true",
+        help=_("debug mode"))
+    pushp.add_argument(
+        "-U", "--url",
+        dest="url",
+        default=None,
+        help=_("URL for remote registry"))
+    pushp.add_argument(
+        "-u", "--username",
+        default=None,
+        dest="username",
+        help=_("Username for remote registry"))
+    pushp.add_argument(
+        "-p", "--password",
+        default=None,
+        dest="password",
+        help=_("Password for remote registry"))
     pushp.add_argument("image", help=_("container image"))
-    pushp.add_argument("-a", "--activation_key",
-                         default=None,
-                         dest="activation_key",
-                         help=_("Activation Key"))
-    pushp.add_argument("-r", "--repository_id",
-                         default=None,
-                         dest="repo_id",
-                         help=_("Repository ID"))
+    pushp.add_argument(
+        "-a", "--activation_key",
+        default=None,
+        dest="activation_key",
+        help=_("Activation Key"))
+    pushp.add_argument(
+        "-r", "--repository_id",
+        default=None,
+        dest="repo_id",
+        help=_("Repository ID"))
     # pushp.add_argument("--activation_key_name",
     #                      default=None,
     #                      dest="activation_key_name",
@@ -372,13 +427,43 @@ if __name__ == '__main__':
     scanp.set_defaults(func='scan')
     scan_group = scanp.add_mutually_exclusive_group()
     scan_out = scanp.add_mutually_exclusive_group()
-    scan_out.add_argument("--json", default=False, action='store_true', help=_("output json"))
-    scan_out.add_argument("--detail", default=False, action='store_true', help=_("output more detail"))
-    scanp.add_argument("scan_targets", nargs='*', help=_("container image"))
-    scanp.add_argument("--fetch_cves", type=bool_detect, default=None,  help=_("override the behavior defined in /etc/oscapd/config.ini as to whether to download the most recent CVE data. Values can be True of False"))
-    scan_group.add_argument("--all", default=False, action='store_true', help=_("scan all images (excluding intermediate layers) and containers"))
-    scan_group.add_argument("--images", default=False, action='store_true', help=_("scan all images (excluding intermediate layers)"))
-    scan_group.add_argument("--containers", default=False, action='store_true', help=_("scan all containers"))
+    scan_out.add_argument(
+        "--json",
+        default=False,
+        action='store_true',
+        help=_("output json"))
+    scan_out.add_argument(
+        "--detail",
+        default=False,
+        action='store_true',
+        help=_("output more detail"))
+    scanp.add_argument(
+        "scan_targets",
+        nargs='*',
+        help=_("container image"))
+    scanp.add_argument(
+        "--fetch_cves",
+        type=bool_detect,
+        default=None,
+        help=_("override the behavior defined in /etc/oscapd/config.ini as to "
+               "whether to download the most recent CVE data. "
+               "Values can be True of False"))
+    scan_group.add_argument(
+        "--all",
+        default=False,
+        action='store_true',
+        help=_(
+            "scan all images (excluding intermediate layers) and containers"))
+    scan_group.add_argument(
+        "--images",
+        default=False,
+        action='store_true',
+        help=_("scan all images (excluding intermediate layers)"))
+    scan_group.add_argument(
+        "--containers",
+        default=False,
+        action='store_true',
+        help=_("scan all containers"))
 
     # atomic stop
     stopp = subparser.add_parser(
@@ -387,8 +472,9 @@ if __name__ == '__main__':
         "image does not specify LABEL STOP")
     stopp.set_defaults(func='stop')
     add_opt(stopp)
-    stopp.add_argument("-n", "--name", dest="name", default=None,
-                       help=_("name of container"))
+    stopp.add_argument(
+        "-n", "--name", dest="name", default=None,
+        help=_("name of container"))
     stopp.add_argument("image", help=_("container image"))
 
     # atomic run
@@ -398,16 +484,19 @@ if __name__ == '__main__':
         "does not specify LABEL run\n'%s'" % atomic.print_run())
     runp.set_defaults(func='run')
     add_opt(runp)
-    runp.add_argument("-n", "--name", dest="name", default=None,
-                      help=_("name of container"))
-    runp.add_argument("--spc", default=False, action="store_true",
-                      help=_("use super privileged container mode: '%s'" %
-                             atomic.print_spc()))
+    runp.add_argument(
+        "-n", "--name", dest="name", default=None,
+        help=_("name of container"))
+    runp.add_argument(
+        "--spc", default=False, action="store_true",
+        help=_("use super privileged container mode: '%s'" %
+               atomic.print_spc()))
     runp.add_argument("image", help=_("container image"))
-    runp.add_argument("command", nargs=argparse.REMAINDER,
-                      help=_("command to execute within the container. "
-                             "If container is not running, command is appended"
-                             "to the image run method"))
+    runp.add_argument(
+        "command", nargs=argparse.REMAINDER,
+        help=_("command to execute within the container. "
+               "If container is not running, command is appended"
+               "to the image run method"))
 
     runp.add_argument(
         "--display",
@@ -425,16 +514,18 @@ if __name__ == '__main__':
         "UNINSTALL %s'" % atomic.print_uninstall())
     uninstallp.set_defaults(func='uninstall')
     add_opt(uninstallp)
-    uninstallp.add_argument("-n", "--name", dest="name", default=None,
-                            help=_("name of container"))
-    uninstallp.add_argument("-f", "--force", default=False, dest="force",
-                            action="store_true",
-                            help=_("remove all containers based on this "
-                                   "image"))
+    uninstallp.add_argument(
+        "-n", "--name", dest="name", default=None,
+        help=_("name of container"))
+    uninstallp.add_argument(
+        "-f", "--force", default=False, dest="force",
+        action="store_true",
+        help=_("remove all containers based on this image"))
     uninstallp.add_argument("image", help=_("container image"))
-    uninstallp.add_argument("args", nargs=argparse.REMAINDER,
-                            help=_("Additional arguments appended to the "
-                                   "image uninstall method"))
+    uninstallp.add_argument(
+        "args", nargs=argparse.REMAINDER,
+        help=_("Additional arguments appended to the "
+               "image uninstall method"))
 
     # atomic unmount
     unmountp = subparser.add_parser(
@@ -442,9 +533,9 @@ if __name__ == '__main__':
         epilog="atomic unmount will unmount a container image previously "
         "mounted with atomic mount")
     unmountp.set_defaults(func='unmount')
-    unmountp.add_argument("mountpoint",
-                          help=_("filesystem location of image/container to "
-                                 "be unmounted"))
+    unmountp.add_argument(
+        "mountpoint",
+        help=_("filesystem location of image/container to be unmounted"))
 
     # atomic update
     updatep = subparser.add_parser(
@@ -454,9 +545,10 @@ if __name__ == '__main__':
         "the container will continue to use the old image.  Use "
         "--force to remove the outdated container.")
     updatep.set_defaults(func='update')
-    updatep.add_argument("-f", "--force", default=False, dest="force",
-                         action="store_true",
-                         help=_("remove all containers based on this image"))
+    updatep.add_argument(
+        "-f", "--force", default=False, dest="force",
+        action="store_true",
+        help=_("remove all containers based on this image"))
     updatep.add_argument("image", help=_("container image"))
 
     # atomic version
@@ -464,9 +556,10 @@ if __name__ == '__main__':
         "version", help=_("display image 'Name Version Release' label"),
         epilog="atomic version displays the image version information, if "
         "it is provided")
-    versionp.add_argument("-r", "--recurse", default=False, dest="recurse",
-                          action="store_true",
-                          help=_("recurse through all layers"))
+    versionp.add_argument(
+        "-r", "--recurse", default=False, dest="recurse",
+        action="store_true",
+        help=_("recurse through all layers"))
     versionp.set_defaults(func='print_version')
     versionp.add_argument("image", help=_("container image"))
 

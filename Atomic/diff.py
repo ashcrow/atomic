@@ -7,12 +7,15 @@ from . import util
 from . import mount
 from . import Atomic
 
+
 class Diff(Atomic):
+
     def diff(self):
-        '''
-        Allows you to 'diff' the RPMs between two different docker images|containers.
+        """
+        Allows you to 'diff' the RPMs between two different docker
+        images|containers.
         :return: None
-        '''
+        """
         helpers = DiffHelpers(self.args)
         images = self.args.compares
         # Check to make sure each input is valid
@@ -38,10 +41,12 @@ class Diff(Atomic):
         if self.args.json:
             util.output_json(helpers.json_out)
 
+
 class DiffHelpers(object):
     """
     Helper class for the diff function
     """
+
     def __init__(self, args):
         self.args = args
         self.json_out = {}
@@ -54,7 +59,8 @@ class DiffHelpers(object):
         """
         rpm_image_list = []
         for image in image_list:
-            rpm_image_list.append(RpmDiff(image.chroot, image.name, self.args.names_only))
+            rpm_image_list.append(RpmDiff(
+                image.chroot, image.name, self.args.names_only))
         self.are_all_images_rpm(rpm_image_list)
         return rpm_image_list
 
@@ -101,7 +107,8 @@ class DiffHelpers(object):
         """
         file_diff = DiffFS(image_list[0].chroot, image_list[1].chroot)
         for image in image_list:
-            self.json_out[image.name] = {'{}_only'.format(image.name): file_diff._get_only(image.chroot)}
+            self.json_out[image.name] = {'{}_only'.format(
+                image.name): file_diff._get_only(image.chroot)}
         self.json_out['files_differ'] = file_diff.common_diff
 
         if not self.args.json:
@@ -119,7 +126,8 @@ class DiffHelpers(object):
             if ip.has_diff:
                 ip._print_diff(self.args.verbose)
             else:
-                util.writeOut("\n{} and {} have no different RPMs".format(ip.i1.name, ip.i2.name))
+                util.writeOut("\n{} and {} have no different RPMs".format(
+                    ip.i1.name, ip.i2.name))
 
         # Output JSON content
         else:
@@ -134,6 +142,7 @@ class DiffHelpers(object):
 
 
 class DiffObj(object):
+
     def __init__(self, docker_name):
         self.dm = mount.DockerMount("/tmp", mnt_mkdir=True)
         self.name = docker_name
@@ -191,16 +200,17 @@ class RpmDiff(object):
         ts = rpm.TransactionSet(chroot_os)
         ts.setVSFlags((rpm._RPMVSF_NOSIGNATURES | rpm._RPMVSF_NODIGESTS))
         image_rpms = []
-        enc=sys.getdefaultencoding()
+        enc = sys.getdefaultencoding()
         for hdr in ts.dbMatch():  # No sorting  # pylint: disable=no-member
             name = hdr['name'].decode(enc)
             if name == 'gpg-pubkey':
                 continue
             else:
                 if not self.names_only:
-                    foo = "{0}-{1}-{2}".format(name, 
-                                               hdr['epochnum'],
-                                               hdr['version'].decode(enc))
+                    foo = "{0}-{1}-{2}".format(
+                        name,
+                        hdr['epochnum'],
+                        hdr['version'].decode(enc))
 
                 else:
                     foo = "{0}".format(name)
@@ -245,9 +255,9 @@ class RpmPrint(object):
         """
         util.writeOut("")
         util.writeOut(self.two_col.format(self.i1.name, self.i2.name))
-        util.writeOut(self.two_col.format("-"*self._max, "-"*self._max))
+        util.writeOut(self.two_col.format("-" * self._max, "-" * self._max))
         self._print_release()
-        util.writeOut(self.two_col.format("-"*self._max, "-"*self._max))
+        util.writeOut(self.two_col.format("-" * self._max, "-" * self._max))
         for rpm in self.all_rpms:
             if (rpm in self.i1.rpms) and (rpm in self.i2.rpms):
                 if be_verbose:
@@ -263,8 +273,10 @@ class RpmPrint(object):
         :return: None
         """
         step = self._max - 2
-        r1_split = [self.i1.release.strip()[i:i+step] for i in range(0, len(self.i1.release.rstrip()), step)]
-        r2_split = [self.i2.release.strip()[i:i+step] for i in range(0, len(self.i2.release.rstrip()), step)]
+        r1_split = [self.i1.release.strip()[i:i + step] for i in range(
+            0, len(self.i1.release.rstrip()), step)]
+        r2_split = [self.i2.release.strip()[i:i + step] for i in range(
+            0, len(self.i2.release.rstrip()), step)]
         for n in list(range(max(len(r1_split), len(r2_split)))):
             col1 = r1_split[n] if 0 <= n < len(r1_split) else ""
             col2 = r2_split[n] if 0 <= n < len(r2_split) else ""
@@ -374,7 +386,7 @@ class DiffFS(object):
         """
         def _print_diff(file_list):
             for _file in file_list:
-                util.writeOut("{0}{1}".format(5*" ", _file))
+                util.writeOut("{0}{1}".format(5 * " ", _file))
 
         if all([len(self.left) == 0, len(self.right) == 0,
                 len(self.common_diff) == 0]):

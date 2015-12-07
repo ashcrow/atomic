@@ -32,4 +32,4 @@ if __name__ == "__main__":
             for v in r["Version"]:
                 print(v["Id"], v["Version"], v["Tag"])
     except dbus.DBusException as e:
-        print (e)
+        print(e)

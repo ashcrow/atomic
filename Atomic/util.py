@@ -90,15 +90,17 @@ def writeOut(output, lf="\n"):
 
 
 def output_json(json_data):
-    ''' Pretty print json data '''
+    """
+    Pretty print json data
+    """
     writeOut(json.dumps(json_data, indent=4, separators=(',', ': ')))
 
 
 def print_scan_summary(json_data, names=None):
-    '''
+    """
     Print a summary of the data returned from a
     CVE scan.
-    '''
+    """
     max_col_width = 50
     min_width = 15
 
@@ -139,7 +141,7 @@ def print_scan_summary(json_data, names=None):
             else:
                 image_name = names[image][-max_width:]
                 if len(image_name) == max_col_width:
-                    image_name = '...' + image_name[-(len(image_name)-3):]
+                    image_name = '...' + image_name[-(len(image_name) - 3):]
 
             tmp_tuple = tuple([image_name] +
                               [str(image_res[sev]) for sev in sevs])
@@ -153,10 +155,10 @@ def print_scan_summary(json_data, names=None):
 
 
 def print_detail_scan_summary(json_data, names=None):
-    '''
+    """
     Print a detailed summary of the data returned from
     a CVE scan.
-    '''
+    """
     clean = True
     sevs = ['Critical', 'Important', 'Moderate', 'Low']
     cve_summary = json_data['host_results']
@@ -191,11 +193,12 @@ def print_detail_scan_summary(json_data, names=None):
                         writeOut("")
     return clean
 
+
 def get_mounts_by_path():
-    '''
+    """
     Gets all mounted devices and paths
     :return: dict of mounted devices and related information by path
-    '''
+    """
     mount_info = []
     f = open('/proc/mounts', 'r')
     for line in f:
@@ -208,13 +211,14 @@ def get_mounts_by_path():
                           )
     return mount_info
 
+
 def is_dock_obj_mounted(docker_obj):
-    '''
+    """
     Check if the provided docker object, which needs to be an ID,
     is currently mounted and should be considered "busy"
     :param docker_obj: str, must be in ID format
     :return: bool True or False
-    '''
+    """
     mount_info = get_mounts_by_path()
     devices = [x['device'] for x in mount_info]
     # If we can find the ID of the object in the list
@@ -224,7 +228,7 @@ def is_dock_obj_mounted(docker_obj):
 
 
 def urllib3_disable_warnings():
-    if not 'requests' in sys.modules:
+    if 'requests' not in sys.modules:
         import requests
     else:
         requests = sys.modules['requests']
@@ -237,7 +241,7 @@ def urllib3_disable_warnings():
         # to talk to urllib3 directly
         have_urllib3 = False
         try:
-            if not 'urllib3' in sys.modules:
+            if 'urllib3' not in sys.modules:
                 import urllib3
                 have_urllib3 = True
         except ImportError as e:

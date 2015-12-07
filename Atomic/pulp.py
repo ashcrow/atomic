@@ -13,6 +13,7 @@ from . import util
 
 util.urllib3_disable_warnings()
 
+
 def push_image_to_pulp(image, server_url, username, password,
                        verify_ssl, docker_client):
     if not image:

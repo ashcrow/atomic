@@ -370,4 +370,8 @@ class SatelliteConfig(object):
                 val, self.config_file, e))
 
     def config(self):
-        return {"url": self.url, "verify_ssl": self.verify_ssl, "username": self.username, "password": self.password}
+        return {
+            "url": self.url,
+            "verify_ssl": self.verify_ssl,
+            "username": self.username,
+            "password": self.password}

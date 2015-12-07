@@ -83,8 +83,8 @@ class Mount:
         Provisions an LVM device-mapper thin device reflecting,
         DM device id 'dm_id' in the docker pool.
         """
-        table = '0 %d thin /dev/mapper/%s %s' %  (int(size)/512, pool, dm_id)
-        
+        table = '0 %d thin /dev/mapper/%s %s' % (int(size) / 512, pool, dm_id)
+
         cmd = ['dmsetup', 'create', name, '--table', table]
         r = util.subp(cmd)
         if r.return_code != 0:
@@ -194,7 +194,8 @@ class DockerMount(Mount):
                 environment=['_ATOMIC_TEMP_CONTAINER'],
                 detach=True, network_disabled=True)['Id']
         except docker.errors.APIError as ex:
-            raise MountError('Error creating temporary container:\n%s' % str(ex))
+            raise MountError(
+                'Error creating temporary container:\n%s' % str(ex))
 
     def _clone(self, cid):
         """
@@ -343,7 +344,7 @@ class DockerMount(Mount):
             self.mountpoint = os.path.join(self.mountpoint, cid[:20])
 
             try:
-                if not os.path.exists(self.mountpoint) :
+                if not os.path.exists(self.mountpoint):
                     os.mkdir(self.mountpoint)
             except Exception as e:
                 raise MountError(e)
@@ -470,10 +471,10 @@ class DockerMount(Mount):
         driver_unmount_fn()
 
     def _get_all_cids(self):
-        '''
+        """
         Simple function that returns a list of the container
         IDs.
-        '''
+        """
         return [x['Id'] for x in self.client.containers(all=True)]
 
     def _unmount_devicemapper(self, path=None):
@@ -525,7 +526,9 @@ class DockerMount(Mount):
         """
         mountpoint = self.mountpoint if path is None else path
         if Mount.get_dev_at_mountpoint(mountpoint) != 'overlay':
-            raise MountError('Device mounted at {} is not an atomic mount.'.format(mountpoint))
+            raise MountError(
+                'Device mounted at {} is not an atomic mount.'.format(
+                    mountpoint))
         cid = self._get_overlay_mount_cid()
         Mount.unmount_path(mountpoint)
         self._cleanup_container(self.client.inspect_container(cid))

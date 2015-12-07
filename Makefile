@@ -4,10 +4,11 @@ SYSCONFDIR ?= $(DESTDIR)/etc/sysconfig
 PROFILEDIR ?= $(DESTDIR)/etc/profile.d
 PYTHON ?= /usr/bin/python
 PYLINT ?= /usr/bin/pylint
+PEP8 ?= /usr/bin/pep8
 GO_MD2MAN ?= /usr/bin/go-md2man
 
 .PHONY: all
-all: python-build docs pylint-check
+all: python-build docs check
 
 .PHONY: test
 test:
@@ -20,6 +21,13 @@ python-build:
 .PHONY: pylint-check
 pylint-check:
 	$(PYLINT) -E --additional-builtins=_ *.py atomic Atomic tests/unit/*.py
+
+.PHONY: pep8-check
+pep8-check:
+	find . -name "*.py" | xargs $(PEP8)
+
+.PHONY: check
+check: pylint-check pep8-check
 
 MANPAGES_MD = $(wildcard docs/*.md)
 

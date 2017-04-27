@@ -750,14 +750,15 @@ Warning: You may want to modify `%s` before starting the service""" % os.path.jo
 
         # rename_files may contain variables that need to be replaced.
         if rename_files:
-            for k, v in rename_files.items():
-                template = Template(v)
+            for orig_path, new_raw_path in rename_files.items():
+                template = Template(new_raw_path)
                 try:
-                    new_v = template.substitute(values)
+                    new_path = template.substitute(values)
                 except KeyError as e:
-                    raise ValueError("The template file 'manifest.json' still contains an unreplaced value for: '%s'" % \
-                                     (str(e)))
-                rename_files[k] = new_v
+                    raise ValueError(
+                        "The template file 'manifest.json' still contains an "
+                        "unreplaced value for: '{}'".format(e))
+                rename_files[orig_path] = new_path
 
         missing_bind_paths = self._check_oci_configuration_file(destination_path, remote_path, True)
 

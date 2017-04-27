@@ -37,7 +37,7 @@ class RPMHostInstall(object):
 
                     # If rename_files is set, rename the destination file
                     if rename_files and rel_dest_path in rename_files:
-                        rel_dest_path = rename_files.get(rel_dest_path)
+                        rel_dest_path = rename_files.pop(rel_dest_path)
                         dest_path = os.path.join(prefix or "/", os.path.relpath(rel_dest_path, "/"))
 
                     if os.path.exists(dest_path):
@@ -45,15 +45,25 @@ class RPMHostInstall(object):
                             os.remove(new_installed_files)
                         raise ValueError("File %s already exists." % dest_path)
 
+                    # If the the path is in the template set,
+                    # templetize it and copy ...
                     if rel_dest_path in templates_set:
                         with open(src_file, 'r') as src_file_obj:
                             data = src_file_obj.read()
                         util.write_template(src_file, data, values or {}, dest_path)
                         shutil.copystat(src_file, dest_path)
+                    # ... else just copy it over
                     else:
                         shutil.copy2(src_file, dest_path)
 
                     new_installed_files.append(rel_dest_path)
+
+            # Directories will remain
+            for old, new in rename_files.items():
+                print(old, new)
+                if os.path.isdir(old):
+                    os.rename(old, new)
+                    new_installed_files.append(new)
             new_installed_files.sort()  # just for an aesthetic reason in the info file output
 
         return new_installed_files
@@ -182,6 +192,7 @@ class RPMHostInstall(object):
             os.makedirs(rootfs)
             if installed_files is None:
                 installed_files = RPMHostInstall.rm_add_files_to_host(None, exports, rpm_content, files_template=installed_files_template, values=values, rename_files=rename_files)
+                print(installed_files)
             rpm_root = RPMHostInstall.generate_rpm_from_rootfs(destination, temp_dir, name, image_id, labels, include_containers_file=False, installed_files=installed_files, defaultversion=defaultversion)
             rpm_file = RPMHostInstall.find_rpm(rpm_root)
             if rpm_file:

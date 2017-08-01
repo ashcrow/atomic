@@ -13,6 +13,15 @@ try:
 except ImportError:
     DEVNULL = open(os.devnull, 'wb')
 
+
+try:
+    import jsonpath_rw
+    #: If the jsonpath_rw library is available on the system
+    HAS_JSONPATH = True
+except:
+    HAS_JSONPATH = False
+
+
 ATOMIC_CONFIG = util.get_atomic_config()
 storage = ATOMIC_CONFIG.get('default_storage', "docker")
 
@@ -53,6 +62,9 @@ def cli(subparser):
                      help=_("Filter output based on conditions given in the VARIABLE=VALUE form"))
     pss.add_argument("--json", action='store_true',dest="json", default=False,
                      help=_("print in a machine parseable form"))
+    if HAS_JSONPATH:
+        pss.add_argument("--jsonpath", metavar='JSONPATH', dest="jsonpath", default=False,
+                         help=_("Filter output via JSONPATH query. Requires jsonpath-rw to be installed"))
     pss.add_argument("-n", "--noheading", dest="heading", default=True,
                      action="store_false",
                      help=_("do not print heading when listing the containers"))
@@ -155,6 +167,13 @@ class Containers(Atomic):
             for con_obj in container_objects:
                 util.write_out(con_obj.id[0:max_container_id])
             return 0
+
+        if HAS_JSONPATH:
+            if self.args.jsonpath:
+                query = jsonpath_rw.parse(self.args.jsonpath)
+                container_objects = [match.value for match in query.find(container_objects)]
+                util.output_json(container_objects)
+                return 0
 
         if self.args.json:
             util.output_json(self._to_json(container_objects))

@@ -48,8 +48,9 @@ docs/%.1: docs/%.1.md
 .PHONY: docs
 docs: $(MANPAGES_MD:%.md=%)
 
-dockertar-sha256-helper: dockertar-sha256-helper.go $(shell find dockertar-sha256-helper-gopath -name '*.go')
-	GOPATH=$(shell pwd)/dockertar-sha256-helper-gopath $(GO) build dockertar-sha256-helper.go
+
+dockertar-sha256-helper: dockertar-sha256-helper.go $(shell find vendor/go/dockertar-sha256-helper-gopath -name '*.go')
+	GOPATH=$(shell pwd)/vendor/go/dockertar-sha256-helper-gopath $(GO) build dockertar-sha256-helper.go
 
 gotar: gotar.go
 	$(GO) build -o $@ $<

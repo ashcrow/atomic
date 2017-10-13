@@ -14,12 +14,16 @@ func main() {
 		panic("One positional argument is required")
 	}
 	reader, err := os.Open(os.Args[1])
+	// Close the input file at the end of the function
+	defer reader.Close()
 	if err != nil {
 		os.Exit(1)
 	}
 	buf := make([]byte, 4096)
 	sha_256 := sha256.New()
 	w := gzip.NewWriter(sha_256)
+	// Close output file at the end of the function
+	defer w.Close()
 
 	for {
 		n, err := reader.Read(buf)
@@ -33,7 +37,5 @@ func main() {
 			panic(err)
 		}
 	}
-	w.Close()
-
 	fmt.Printf("%x\n", sha_256.Sum(nil))
 }

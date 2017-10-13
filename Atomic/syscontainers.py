@@ -1703,7 +1703,7 @@ Warning: You may want to modify `%s` before starting the service""" % os.path.jo
         :rtype: tuple(bool, str)
         """
         # Remove prefixes which we use to map to skopeo args
-        real_image = utils.remove_skopeo_prefixes(image)
+        real_image = util.remove_skopeo_prefixes(image)
 
         if full_resolution:
             try:

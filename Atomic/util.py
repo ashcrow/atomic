@@ -1103,14 +1103,15 @@ def kpod(cmd, storage=None, debug=None):
 
 def remove_skopeo_prefixes(image):
     """
-    Remove prefixes used by skopeo but not expected in other image uses.
+    Remove prefixes that map to skopeo args but not expected
+    in other image uses.
 
     :param image: The full image string
     :type image: str
-    :returns: The image string without skopeo prefixes
+    :returns: The image string without prefixes
     :rtype: str
     """
-    for remove in ('http:', 'https:'):
+    for remove in ('oci:', 'http:', 'https:'):
         if image.startswith(remove):
             image = image.replace(remove, '')
     return image
